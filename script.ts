@@ -51,7 +51,7 @@ price.addEventListener("keyup", (e) => {
                     : `${currencySymbol}${+coin / 100}`;
 
             if (value > 0) {
-                newElement.textContent = `${coinName}: ${value}`;
+                newElement.textContent = `${coinName}: ${value} pcs`;
             }
 
             coinsElement.appendChild(newElement);
