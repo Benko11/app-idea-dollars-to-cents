@@ -3,14 +3,17 @@ type CurrencySymbol = "$" | "£";
 const coins: {
     id: CurrencySymbol;
     coins: number[];
+    change: string;
 }[] = [
     {
         id: "£",
         coins: [1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000],
+        change: "p",
     },
     {
         id: "$",
         coins: [1, 5, 10, 25, 50, 100],
+        change: "c",
     },
 ];
 
@@ -32,7 +35,27 @@ price.addEventListener("keyup", (e) => {
     >;
 
     if (fraction != null && whole != null) {
-        generateCoins(+whole, +fraction, currencySymbol);
+        const generatedCoins = generateCoins(+whole, +fraction, currencySymbol);
+
+        for (let coin in generatedCoins) {
+            // @ts-ignore
+            const value = generatedCoins[coin];
+
+            const newElement = document.createElement("div");
+            const coinName =
+                +coin < 100
+                    ? `${coin}${
+                          coins.filter((coin) => coin.id === currencySymbol)[0]
+                              .change
+                      }`
+                    : `${currencySymbol}${+coin / 100}`;
+
+            if (value > 0) {
+                newElement.textContent = `${coinName}: ${value}`;
+            }
+
+            coinsElement.appendChild(newElement);
+        }
     }
 });
 
@@ -50,7 +73,7 @@ function generateCoins(
     whole: number,
     fraction: number,
     currencySymbol: CurrencySymbol
-) {
+): { number?: number } {
     if (fraction < 10) fraction *= 10;
 
     const absolute: number = fraction + whole * 100;
@@ -63,17 +86,17 @@ function generateCoins(
     let absoluteCopy = absolute;
 
     for (let coin of chosenCoins) {
-        const takenCoins = Math.floor(absoluteCopy / coin);
+        const takenCoins = <number>Math.floor(absoluteCopy / coin);
         absoluteCopy -= takenCoins * coin;
+
         // @ts-ignore
         generatedCoins[coin] = takenCoins;
     }
 
-    coinsElement.textContent = JSON.stringify(generatedCoins);
-    console.log(generatedCoins);
+    return generatedCoins;
 }
 
-function preventFurtherFloatingPoints(e: KeyboardEvent) {
+function preventFurtherFloatingPoints(e: KeyboardEvent): void {
     if (
         price.value.substring(1).split(".")?.[0] != null &&
         price.value.substring(1).split(".")?.[1]?.length >= 2
@@ -81,6 +104,6 @@ function preventFurtherFloatingPoints(e: KeyboardEvent) {
         e.preventDefault();
 }
 
-function resetCoinView() {
+function resetCoinView(): void {
     coinsElement.textContent = "";
 }
